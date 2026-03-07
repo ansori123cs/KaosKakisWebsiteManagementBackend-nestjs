@@ -1,34 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DrizzleAsyncProvider } from './database/drizzle.service';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as sc from './database/drizzle/schema';
+import { sql } from 'drizzle-orm';
 
-export type Bahan = {
-  id: number;
-  name: string;
-  description: string;
-};
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
-  }
-
-  getBahan(): Bahan[] {
-    const listBahan: Bahan[] = [
-      {
-        id: 1,
-        name: 'pe 30 s',
-        description: 'bahan lembut 2 pe-30-s',
-      },
-      {
-        id: 2,
-        name: 'nylon',
-        description: 'bahan nilon lembut sport',
-      },
-      {
-        id: 3,
-        name: 'polyster',
-        description: 'bahan sedikit kasar tapi murah berkualitas',
-      },
-    ];
-    return listBahan;
+  constructor(
+    @Inject(DrizzleAsyncProvider)
+    private db: NodePgDatabase<typeof sc>,
+  ) {}
+  async getHello() {
+    try {
+      const result = await this.db.execute(sql`SELECT 1`);
+      return {
+        status: 'success',
+        message: 'conection success',
+        data: result,
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        message: 'conection failed',
+      };
+    }
   }
 }
