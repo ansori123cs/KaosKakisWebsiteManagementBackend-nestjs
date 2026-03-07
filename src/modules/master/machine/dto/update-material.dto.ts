@@ -1,14 +1,14 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateMaterialDto } from './create-material.dto';
 import { IsNumber, IsString } from 'class-validator';
+import { CreateMachineDto } from './create-machine.dto';
 
-export class UpdateMaterialDto extends PartialType(CreateMaterialDto) {
+export class UpdateMaterialDto extends PartialType(CreateMachineDto) {
   @ApiProperty()
   @IsNumber()
   status: number;
 }
 
-export class ResponseMaterialDto {
+export class ResponseMachineDto {
   @ApiProperty()
   @IsString()
   code: string;
