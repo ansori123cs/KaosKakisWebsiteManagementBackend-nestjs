@@ -12,12 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { MaterialService } from './material.service';
-import { CreateMaterialDto } from './dto/create-material.dto';
-import {
-  ResponseMaterialDto,
-  UpdateMaterialDto,
-} from './dto/update-material.dto';
+
 import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -26,27 +21,30 @@ import {
 import {
   MasterDataDetailDto,
   MasterDataPaginatedDto,
-} from './dto/query-material.dto';
+} from './dto/query-machine.dto';
+import { MachineService } from './machine.service';
+import { CreateMachineDto } from './dto/create-machine.dto';
+import { ResponseMachineDto, UpdateMachineDto } from './dto/update-machine.dto';
 
-@Controller('/master/materials')
-export class MaterialController {
-  constructor(private readonly materialService: MaterialService) {}
+@Controller('/master/machines')
+export class MachineController {
+  constructor(private readonly machineService: MachineService) {}
 
   @Post()
   @ApiCreatedResponse({
     description: 'Created Successfully',
-    type: CreateMaterialDto,
+    type: CreateMachineDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() createMaterialDto: CreateMaterialDto) {
-    return this.materialService.create(createMaterialDto);
+  create(@Body() createMachineDto: CreateMachineDto) {
+    return this.machineService.create(createMachineDto);
   }
 
   @Get()
   @ApiOkResponse({ type: MasterDataPaginatedDto })
   @ApiNotFoundResponse()
   findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.materialService.findAll(limit, offset);
+    return this.machineService.findAll(limit, offset);
   }
 
   @Get(':id')
@@ -61,28 +59,25 @@ export class MaterialController {
     )
     id: string,
   ) {
-    return this.materialService.findOne(id);
+    return this.machineService.findOne(id);
   }
 
   @Patch(':id')
   @ApiCreatedResponse({
     description: 'Updated Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseMachineDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(
-    @Param('id') id: string,
-    @Body() updateMaterialDto: UpdateMaterialDto,
-  ) {
-    return this.materialService.update(id, updateMaterialDto);
+  update(@Param('id') id: string, @Body() UpdateMachineDto: UpdateMachineDto) {
+    return this.machineService.update(id, UpdateMachineDto);
   }
 
   @Delete(':id')
   @ApiCreatedResponse({
     description: 'Deleted Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseMachineDto,
   })
   remove(@Param('id') id: string) {
-    return this.materialService.remove(id);
+    return this.machineService.remove(id);
   }
 }

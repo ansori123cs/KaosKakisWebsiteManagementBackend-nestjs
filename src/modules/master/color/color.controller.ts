@@ -12,12 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { MaterialService } from './material.service';
-import { CreateMaterialDto } from './dto/create-material.dto';
-import {
-  ResponseMaterialDto,
-  UpdateMaterialDto,
-} from './dto/update-material.dto';
+
 import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -26,27 +21,30 @@ import {
 import {
   MasterDataDetailDto,
   MasterDataPaginatedDto,
-} from './dto/query-material.dto';
+} from './dto/query-color.dto';
+import { ColorService } from './color.service';
+import { CreateColorDto } from './dto/create-color.dto';
+import { ResponseColorDto, UpdateColorDto } from './dto/update-color.dto';
 
-@Controller('/master/materials')
-export class MaterialController {
-  constructor(private readonly materialService: MaterialService) {}
+@Controller('/master/colors')
+export class ColorController {
+  constructor(private readonly colorService: ColorService) {}
 
   @Post()
   @ApiCreatedResponse({
     description: 'Created Successfully',
-    type: CreateMaterialDto,
+    type: CreateColorDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() createMaterialDto: CreateMaterialDto) {
-    return this.materialService.create(createMaterialDto);
+  create(@Body() createColorDto: CreateColorDto) {
+    return this.colorService.create(createColorDto);
   }
 
   @Get()
   @ApiOkResponse({ type: MasterDataPaginatedDto })
   @ApiNotFoundResponse()
   findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.materialService.findAll(limit, offset);
+    return this.colorService.findAll(limit, offset);
   }
 
   @Get(':id')
@@ -61,28 +59,25 @@ export class MaterialController {
     )
     id: string,
   ) {
-    return this.materialService.findOne(id);
+    return this.colorService.findOne(id);
   }
 
   @Patch(':id')
   @ApiCreatedResponse({
     description: 'Updated Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseColorDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(
-    @Param('id') id: string,
-    @Body() updateMaterialDto: UpdateMaterialDto,
-  ) {
-    return this.materialService.update(id, updateMaterialDto);
+  update(@Param('id') id: string, @Body() updateColorDto: UpdateColorDto) {
+    return this.colorService.update(id, updateColorDto);
   }
 
   @Delete(':id')
   @ApiCreatedResponse({
     description: 'Deleted Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseColorDto,
   })
   remove(@Param('id') id: string) {
-    return this.materialService.remove(id);
+    return this.colorService.remove(id);
   }
 }

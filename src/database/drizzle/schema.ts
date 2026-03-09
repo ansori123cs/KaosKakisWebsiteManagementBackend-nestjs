@@ -87,10 +87,11 @@ export const kaosKaki = pgTable("kaos-kaki", {
 	description: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
-	isDeleted: timestamp("is_deleted", { withTimezone: true, mode: 'string' }),
 	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
 	userDeleted: text("user_deleted"),
 	material: uuid(),
+	isDeleted: boolean("is_deleted"),
+	status: smallint(),
 }, (table) => [
 	foreignKey({
 			columns: [table.material],

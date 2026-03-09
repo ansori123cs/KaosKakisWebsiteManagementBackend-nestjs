@@ -12,12 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { MaterialService } from './material.service';
-import { CreateMaterialDto } from './dto/create-material.dto';
-import {
-  ResponseMaterialDto,
-  UpdateMaterialDto,
-} from './dto/update-material.dto';
+
 import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -26,27 +21,30 @@ import {
 import {
   MasterDataDetailDto,
   MasterDataPaginatedDto,
-} from './dto/query-material.dto';
+} from './dto/query-size.dto';
+import { SizeService } from './size.service';
+import { CreateSizeDto } from './dto/create-size.dto';
+import { ResponseSizeDto, UpdateSizeDto } from './dto/update-size.dto';
 
-@Controller('materials')
-export class MaterialController {
-  constructor(private readonly materialService: MaterialService) {}
+@Controller('/master/sizes')
+export class SizeController {
+  constructor(private readonly sizeService: SizeService) {}
 
   @Post()
   @ApiCreatedResponse({
     description: 'Created Successfully',
-    type: CreateMaterialDto,
+    type: CreateSizeDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() createMaterialDto: CreateMaterialDto) {
-    return this.materialService.create(createMaterialDto);
+  create(@Body() createSizeDto: CreateSizeDto) {
+    return this.sizeService.create(createSizeDto);
   }
 
   @Get()
   @ApiOkResponse({ type: MasterDataPaginatedDto })
   @ApiNotFoundResponse()
   findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.materialService.findAll(limit, offset);
+    return this.sizeService.findAll(limit, offset);
   }
 
   @Get(':id')
@@ -61,28 +59,25 @@ export class MaterialController {
     )
     id: string,
   ) {
-    return this.materialService.findOne(id);
+    return this.sizeService.findOne(id);
   }
 
   @Patch(':id')
   @ApiCreatedResponse({
     description: 'Updated Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseSizeDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(
-    @Param('id') id: string,
-    @Body() updateMaterialDto: UpdateMaterialDto,
-  ) {
-    return this.materialService.update(id, updateMaterialDto);
+  update(@Param('id') id: string, @Body() updateSizeDto: UpdateSizeDto) {
+    return this.sizeService.update(id, updateSizeDto);
   }
 
   @Delete(':id')
   @ApiCreatedResponse({
     description: 'Deleted Successfully',
-    type: ResponseMaterialDto,
+    type: ResponseSizeDto,
   })
   remove(@Param('id') id: string) {
-    return this.materialService.remove(id);
+    return this.sizeService.remove(id);
   }
 }

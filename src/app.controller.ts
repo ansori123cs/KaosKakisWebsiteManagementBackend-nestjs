@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiInternalServerErrorResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@Controller('test')
+@Controller('/')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 

@@ -16,7 +16,6 @@ export class AppService {
       return {
         status: 'success',
         message: 'conection success',
-        data: result,
       };
     } catch (error) {
       return {
