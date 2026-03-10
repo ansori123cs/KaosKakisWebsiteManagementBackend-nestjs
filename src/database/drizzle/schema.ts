@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, uuid, integer, timestamp, text, unique, varchar, smallint, boolean } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, uuid, integer, timestamp, text, smallint, unique, varchar, boolean } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -12,6 +12,7 @@ export const stock = pgTable("stock", {
 	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
 	userDeleted: text("user_deleted"),
 	itemVariant: uuid("item-variant").defaultRandom(),
+	status: smallint(),
 }, (table) => [
 	foreignKey({
 			columns: [table.id],
@@ -80,6 +81,18 @@ export const color = pgTable("color", {
 	unique("color_code_key").on(table.code),
 ]);
 
+export const customer = pgTable("customer", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	name: text(),
+	note: text(),
+	phone: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	isDeleted: boolean("is_deleted"),
+	status: smallint(),
+});
+
 export const kaosKaki = pgTable("kaos-kaki", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	code: varchar(),
@@ -101,6 +114,19 @@ export const kaosKaki = pgTable("kaos-kaki", {
 	unique("kaos-kaki_code_key").on(table.code),
 ]);
 
+export const order = pgTable("order", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	note: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	isDeleted: timestamp("is_deleted", { withTimezone: true, mode: 'string' }),
+	userDeleted: text("user_deleted"),
+	status: smallint(),
+	details: uuid(),
+	customer: uuid(),
+});
+
 export const itemVariant = pgTable("item-variant", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
@@ -111,6 +137,7 @@ export const itemVariant = pgTable("item-variant", {
 	size: uuid(),
 	userDeleted: text("user_deleted"),
 	item: uuid(),
+	status: smallint(),
 }, (table) => [
 	foreignKey({
 			columns: [table.item],
@@ -129,15 +156,28 @@ export const itemVariant = pgTable("item-variant", {
 		}).onUpdate("restrict").onDelete("restrict"),
 ]);
 
+export const orderDetails = pgTable("order-details", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	price: integer(),
+	amount: integer(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	isDeleted: boolean("is_deleted"),
+	userDeleted: text("user_deleted"),
+	status: smallint(),
+});
+
 export const itemMachine = pgTable("item-machine", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
-	isDeleted: timestamp("is_deleted", { withTimezone: true, mode: 'string' }),
 	deletedAt: timestamp("deleted-at", { withTimezone: true, mode: 'string' }),
 	userDeleted: varchar("user_deleted"),
 	machine: uuid(),
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	item: uuid(),
+	status: smallint(),
+	isDeleted: boolean("is_deleted"),
 }, (table) => [
 	foreignKey({
 			columns: [table.item],
