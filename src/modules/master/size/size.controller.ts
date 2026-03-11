@@ -17,6 +17,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   MasterDataDetailDto,
@@ -26,6 +27,7 @@ import { SizeService } from './size.service';
 import { CreateSizeDto } from './dto/create-size.dto';
 import { ResponseSizeDto, UpdateSizeDto } from './dto/update-size.dto';
 
+@ApiTags('Master - Size')
 @Controller('/master/sizes')
 export class SizeController {
   constructor(private readonly sizeService: SizeService) {}
@@ -68,7 +70,10 @@ export class SizeController {
     type: ResponseSizeDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(@Param('id') id: string, @Body() updateSizeDto: UpdateSizeDto) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateSizeDto: UpdateSizeDto,
+  ) {
     return this.sizeService.update(id, updateSizeDto);
   }
 
@@ -77,7 +82,7 @@ export class SizeController {
     description: 'Deleted Successfully',
     type: ResponseSizeDto,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.sizeService.remove(id);
   }
 }

@@ -19,8 +19,21 @@ async function bootstrap() {
     .addTag('Kaos Kaki Management Routes')
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, config, { autoTagControllers: true });
+  SwaggerModule.setup('api', app, documentFactory, {
+    swaggerOptions: {
+      tagsSorter: (a: string, b: string) => a.localeCompare(b),
+
+      operationsSorter: (a, b) => {
+        const methodOrder = { get: 1, post: 2, patch: 3, put: 4, delete: 5 };
+        return (
+          (methodOrder[a.get('method')] || 99) -
+          (methodOrder[b.get('method')] || 99)
+        );
+      },
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -22,12 +22,14 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   MasterDataDetailDto,
   MasterDataPaginatedDto,
 } from './dto/query-material.dto';
 
+@ApiTags('Master - Material')
 @Controller('/master/materials')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
@@ -71,7 +73,7 @@ export class MaterialController {
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateMaterialDto: UpdateMaterialDto,
   ) {
     return this.materialService.update(id, updateMaterialDto);
@@ -82,7 +84,7 @@ export class MaterialController {
     description: 'Deleted Successfully',
     type: ResponseMaterialDto,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.materialService.remove(id);
   }
 }

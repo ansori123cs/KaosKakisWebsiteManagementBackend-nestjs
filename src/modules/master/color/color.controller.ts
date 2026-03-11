@@ -17,6 +17,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   MasterDataDetailDto,
@@ -26,6 +27,7 @@ import { ColorService } from './color.service';
 import { CreateColorDto } from './dto/create-color.dto';
 import { ResponseColorDto, UpdateColorDto } from './dto/update-color.dto';
 
+@ApiTags('Master - Color')
 @Controller('/master/colors')
 export class ColorController {
   constructor(private readonly colorService: ColorService) {}
@@ -68,7 +70,10 @@ export class ColorController {
     type: ResponseColorDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(@Param('id') id: string, @Body() updateColorDto: UpdateColorDto) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateColorDto: UpdateColorDto,
+  ) {
     return this.colorService.update(id, updateColorDto);
   }
 
@@ -77,7 +82,7 @@ export class ColorController {
     description: 'Deleted Successfully',
     type: ResponseColorDto,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.colorService.remove(id);
   }
 }

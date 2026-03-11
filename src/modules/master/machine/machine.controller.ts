@@ -17,6 +17,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   MasterDataDetailDto,
@@ -26,6 +27,7 @@ import { MachineService } from './machine.service';
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { ResponseMachineDto, UpdateMachineDto } from './dto/update-machine.dto';
 
+@ApiTags('Master - Machine')
 @Controller('/master/machines')
 export class MachineController {
   constructor(private readonly machineService: MachineService) {}
@@ -68,7 +70,10 @@ export class MachineController {
     type: ResponseMachineDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  update(@Param('id') id: string, @Body() UpdateMachineDto: UpdateMachineDto) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() UpdateMachineDto: UpdateMachineDto,
+  ) {
     return this.machineService.update(id, UpdateMachineDto);
   }
 
@@ -77,7 +82,7 @@ export class MachineController {
     description: 'Deleted Successfully',
     type: ResponseMachineDto,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.machineService.remove(id);
   }
 }

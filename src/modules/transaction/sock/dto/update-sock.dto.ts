@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { IsNumber, IsString } from 'class-validator';
+import { CreateSockDto } from './create-sock.dto';
 
-export class SockDetails {
+export class UpdateSockDto extends PartialType(CreateSockDto) {
   @ApiProperty()
-  @IsString()
-  name: string;
+  @IsNumber()
+  status: number;
 }
 
 export class ResponseSockDto {
