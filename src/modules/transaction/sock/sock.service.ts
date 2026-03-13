@@ -21,7 +21,7 @@ export class SockService {
   ) {}
 
   async findAll(
-    limit: number = 0,
+    limit: number = 10,
     offset: number = 1,
   ): Promise<SockPaginatedDto> {
     try {
@@ -46,8 +46,8 @@ export class SockService {
       ]);
 
       const rowKaosKaki = await this.db.query.kaosKaki.findMany({
-        where: (kaosKaki) =>
-          and(eq(kaosKaki.isDeleted, false), isNull(kaosKaki.deletedAt)),
+        // where: (kaosKaki) =>
+        //   and(eq(kaosKaki.isDeleted, false), isNull(kaosKaki.deletedAt)),
         columns: {
           id: true,
           name: true,
@@ -55,20 +55,17 @@ export class SockService {
         },
         with: {
           itemMachines: {
-            with: {
-              machine: {
-                columns: {
-                  name: true,
-                },
-              },
-            },
+            columns: { machine: true },
+          },
+          itemVariants: {
+            columns: { color: true, size: true },
           },
         },
       });
 
       const result: SockDto[] = row.map((item) => ({
         id: item.id,
-        name: item.name!,
+        name: item.name! + JSON.stringify(rowKaosKaki),
         status: item.status!,
         created_at: item.created_at,
       }));

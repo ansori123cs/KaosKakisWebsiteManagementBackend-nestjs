@@ -55,7 +55,7 @@ export class SockController {
     type: ResponseSockDto,
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.delete('adad');
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.sockService.remove(id);
   }
 }
