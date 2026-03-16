@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString, IsUUID } from 'class-validator';
-import { UUID } from 'crypto';
 
 export class SockDto {
   @ApiProperty()

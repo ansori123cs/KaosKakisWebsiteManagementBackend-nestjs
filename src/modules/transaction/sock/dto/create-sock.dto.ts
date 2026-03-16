@@ -1,10 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
-  IsObject,
   IsString,
-  IsUrl,
   IsUUID,
   MaxLength,
   ValidateNested,
@@ -19,16 +16,6 @@ class Variation {
   @ApiProperty()
   @IsUUID()
   size: string;
-}
-
-class Photo {
-  @ApiProperty()
-  @IsUrl()
-  url: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  primary: boolean;
 }
 
 export class CreateSockDto {
@@ -61,10 +48,4 @@ export class CreateSockDto {
   @ValidateNested({ each: true })
   @Type(() => Variation)
   variations: Variation[];
-
-  @ApiProperty({ type: [Photo] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Photo)
-  photos: Photo[];
 }

@@ -1,36 +1,29 @@
 // // supabase.service.ts
-// import { Injectable, Inject } from '@nestjs/common';
-// import { SupabaseClient } from '@supabase/supabase-js';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { join } from 'path';
+import { promises as fs } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
-// @Injectable()
-// export class SupabaseService {
-//   constructor(
-//     @Inject(SupabaseClient) private readonly supabase: SupabaseClient,
-//   ) {}
+//helper
+@Injectable()
+export class UploadService {
+  async saveImageFile(file: Express.Multer.File): Promise<string> {
+    const uploadDir = join(process.cwd(), 'public', 'uploads', 'kaos-kaki');
+    await fs.mkdir(uploadDir, { recursive: true });
 
-//   async upload(file: Express.Multer.File) {
-//     const fileName = `${Date.now()}-${file.originalname}`;
-//     const bucketName = 'images'; // Name of your Supabase bucket
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png'].includes(ext)) {
+      throw new BadRequestException('Hanya jpg, jpeg, png yang diperbolehkan');
+    }
 
-//     const { data, error } = await this.supabase.storage
-//       .from(bucketName)
-//       .upload(fileName, file.buffer, {
-//         contentType: file.mimetype,
-//         upsert: false, // Prevents overwriting if file exists
-//       });
+    const filename = `${uuidv4()}.${ext}`;
+    const filepath = join(uploadDir, filename);
 
-//     if (error) {
-//       throw new Error(`Upload failed: ${error.message}`);
-//     }
+    await fs.writeFile(filepath, file.buffer);
 
-//     // Retrieve the public URL
-//     const { data: publicUrlData } = this.supabase.storage
-//       .from(bucketName)
-//       .getPublicUrl(fileName);
-
-//     return {
-//       message: 'File uploaded successfully',
-//       url: publicUrlData.publicUrl,
-//     };
-//   }
-// }
+    // URL yang akan disimpan (sesuaikan dengan base URL app Anda)
+    return `/files/images/${filename}`;
+    // atau jika pakai domain: `https://cdn.domain.com/uploads/kaos-kaki/${filename}`
+  }
+  //==============================================================================================================
+}

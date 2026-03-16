@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -10,7 +11,12 @@ import * as sc from 'src/database/drizzle/index';
 import { SockDto, SockPaginatedDto } from './dto/query-sock.dto';
 import { and, eq, isNull, ne, count } from 'drizzle-orm';
 import { CreateSockDto } from './dto/create-sock.dto';
-import { ResponseSockDto, UpdateSockDto } from './dto/update-sock.dto';
+import {
+  DetailSockDto,
+  ResponseSockDto,
+  UpdateSockDto,
+} from './dto/update-sock.dto';
+import { UploadService } from 'src/shared/upload/upload.service';
 
 @Injectable()
 export class SockService {
@@ -18,6 +24,7 @@ export class SockService {
 
   constructor(
     @Inject(DrizzleAsyncProvider) private db: NodePgDatabase<typeof sc>,
+    private readonly upload: UploadService,
   ) {}
 
   async findAll(
@@ -46,8 +53,8 @@ export class SockService {
       ]);
 
       const rowKaosKaki = await this.db.query.kaosKaki.findMany({
-        // where: (kaosKaki) =>
-        //   and(eq(kaosKaki.isDeleted, false), isNull(kaosKaki.deletedAt)),
+        where: (kaosKaki) =>
+          and(eq(kaosKaki.isDeleted, false), isNull(kaosKaki.deletedAt)),
         columns: {
           id: true,
           name: true,
@@ -82,11 +89,112 @@ export class SockService {
     }
   }
 
+  async findOne(id: string): Promise<DetailSockDto> {
+    const [Item, selectMachines, selectMaterial, selectColors, selectSizes] =
+      await Promise.all([
+        await this.db.query.kaosKaki.findFirst({
+          where: (kaosKaki) =>
+            and(
+              eq(kaosKaki.id, id),
+              eq(kaosKaki.isDeleted, false),
+              isNull(kaosKaki.deletedAt),
+            ),
+          columns: {
+            id: true,
+            name: true,
+            code: true,
+            createdAt: true,
+            description: true,
+            material: true,
+            updatedAt: true,
+            status: true,
+          },
+          with: {
+            itemMachines: {
+              columns: { machine: true },
+            },
+            itemVariants: {
+              columns: { color: true, size: true },
+            },
+          },
+        }),
+        await this.db
+          .select({ label: sc.machine.name, value: sc.machine.id })
+          .from(sc.machine)
+          .where(
+            and(ne(sc.machine.isDeleted, true), isNull(sc.machine.deletedAt)),
+          )
+          .orderBy(sc.machine.name),
+        await this.db
+          .select({ label: sc.material.name, value: sc.material.id })
+          .from(sc.material)
+          .where(
+            and(ne(sc.material.isDeleted, true), isNull(sc.material.deletedAt)),
+          )
+          .orderBy(sc.material.name),
+        await this.db
+          .select({ label: sc.color.name, value: sc.color.id })
+          .from(sc.color)
+          .where(and(ne(sc.color.isDeleted, true), isNull(sc.color.deletedAt)))
+          .orderBy(sc.color.name),
+        await this.db
+          .select({ label: sc.size.name, value: sc.size.id })
+          .from(sc.size)
+          .where(and(ne(sc.size.isDeleted, true), isNull(sc.size.deletedAt)))
+          .orderBy(sc.size.name),
+      ]);
+
+    const result: DetailSockDto = {
+      code: Item?.code!,
+      description: Item?.description!,
+      id: Item?.id,
+      machine: Item?.itemMachines.map((item) => item.machine!),
+      material: Item?.material!,
+      name: Item?.name!,
+      variations: Item?.itemVariants.map((item) => ({
+        color: item?.color!,
+        size: item?.size!,
+      })),
+      status: Item?.status!,
+
+      selectMachines: selectMachines.map((item) => ({
+        label: item.label!,
+        value: item.value,
+      })),
+      selectMaterial: selectMaterial.map((item) => ({
+        label: item.label!,
+        value: item.value,
+      })),
+      selectColors: selectColors.map((item) => ({
+        label: item.label!,
+        value: item.value,
+      })),
+      selectSizes: selectSizes.map((item) => ({
+        label: item.label!,
+        value: item.value,
+      })),
+    };
+
+    return result;
+  }
+
   //create
-  async create(createSockDto: CreateSockDto): Promise<ResponseSockDto> {
+  async create(
+    createSockDto: CreateSockDto,
+    files?: Express.Multer.File[],
+  ): Promise<ResponseSockDto> {
     try {
       const result = await this.db.transaction(async (tx) => {
         const now = new Date().toISOString();
+
+        let imageUrls: string[] = [];
+        if (files && files.length > 0) {
+          imageUrls = await Promise.all(
+            files.map((file) => this.upload.saveImageFile(file)),
+          );
+        }
+
+        console.log(imageUrls);
 
         const [newKaos] = await tx
           .insert(sc.kaosKaki)
