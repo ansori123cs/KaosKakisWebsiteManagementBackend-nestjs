@@ -7,9 +7,15 @@ import { ColorModule } from './modules/master/color/color.module';
 import { DrizzleModule } from './database/database.module';
 import { MachineModule } from './modules/master/machine/machine.module';
 import { SockModule } from './modules/transaction/sock/sock.module';
+import { UploadModule } from './shared/upload/uppload.module';
+import { PocketBaseModule } from './shared/pocketbase/pocketbase.module';
 
 @Module({
   imports: [
+    //pocketbase module
+    PocketBaseModule,
+    //upload module
+    UploadModule,
     //database module
     DrizzleModule,
     //master module

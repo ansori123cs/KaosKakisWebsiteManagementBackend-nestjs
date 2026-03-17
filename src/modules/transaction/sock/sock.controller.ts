@@ -12,7 +12,9 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -22,6 +24,7 @@ import { SockService } from './sock.service';
 import { CreateSockDto } from './dto/create-sock.dto';
 import { ResponseSockDto, UpdateSockDto } from './dto/update-sock.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { PocketBaseAuthGuard } from 'src/common/guards/pocketbase-auth.guard';
 
 @ApiTags('Transaction - Sock')
 @Controller('/transaction/kaos-kaki')
@@ -52,6 +55,7 @@ export class SockController {
 
   @Post()
   @UseInterceptors(FilesInterceptor('files', 10)) // max 10 gambar, field name = "images"
+  @UseGuards(PocketBaseAuthGuard)
   @ApiCreatedResponse({
     description: 'Created Successfully',
     type: CreateSockDto,
@@ -59,6 +63,7 @@ export class SockController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   create(
     @Body() createSockDto: CreateSockDto,
+    @Req() req: any,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -69,7 +74,7 @@ export class SockController {
     )
     files: Express.Multer.File[],
   ) {
-    return this.sockService.create(createSockDto, files);
+    return this.sockService.create(createSockDto, files, req.pbToken);
   }
 
   @Patch(':id')

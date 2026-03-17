@@ -182,19 +182,11 @@ export class SockService {
   async create(
     createSockDto: CreateSockDto,
     files?: Express.Multer.File[],
+    token?: string,
   ): Promise<ResponseSockDto> {
     try {
       const result = await this.db.transaction(async (tx) => {
         const now = new Date().toISOString();
-
-        let imageUrls: string[] = [];
-        if (files && files.length > 0) {
-          imageUrls = await Promise.all(
-            files.map((file) => this.upload.saveImageFile(file)),
-          );
-        }
-
-        console.log(imageUrls);
 
         const [newKaos] = await tx
           .insert(sc.kaosKaki)
@@ -215,6 +207,22 @@ export class SockService {
             code: sc.kaosKaki.code,
             name: sc.kaosKaki.name,
           });
+
+        if (!files?.length) {
+          throw new BadRequestException('Tidak ada file yang diupload');
+        }
+        const uploadedFiles = await this.upload.uploadMultiple(files!, token!);
+
+        const [newPhotos] = await tx
+          .insert(sc.itemFile)
+          .values(
+            uploadedFiles.map((item) => ({
+              url: item.url,
+              item: newKaos.id,
+              isPrimary: true, //di pertama saja sisanya false
+            })),
+          )
+          .returning();
 
         const [newItemMachines] = await tx
           .insert(sc.itemMachine)
