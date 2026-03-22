@@ -12,8 +12,8 @@ export class UploadService {
 
   async saveImageFile(
     file: Express.Multer.File,
-
     token: string,
+    name?: string,
   ): Promise<{
     id: string;
     filename: string;
@@ -22,45 +22,104 @@ export class UploadService {
   }> {
     const ext = file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
     if (!['jpg', 'jpeg', 'png'].includes(ext)) {
-      throw new BadRequestException('Hanya jpg, jpeg, png yang diperbolehkan');
+      throw new BadRequestException(
+        'Hanya file jpg, jpeg, png yang diperbolehkan',
+      );
     }
 
     const pb = this.pbService.getAuthenticatedClient(token);
 
-    // ── Pakai formdata-node ───────────────────────────────────────
     const form = new FormData();
 
     const blob = new Blob([file.buffer], { type: file.mimetype });
     form.append('file', blob, file.originalname);
 
-    // Upload
-    const record = await pb.collection('kaos_kaki_images').create(form);
+    try {
+      // Upload dan buat record
+      const record = await pb.collection('item_images').create(form);
 
-    const { url, thumbUrl } = this.pbService.getFileUrl(record, '400x400');
+      // Ambil URL + thumbnail
+      const { url, thumbUrl } = this.pbService.getFileUrl(record, '400x400');
 
-    return {
-      id: record.id,
-      filename: record.file,
-      url,
-      thumbUrl,
-    };
+      return {
+        id: record.id,
+        filename: record.file as string,
+        url,
+        thumbUrl,
+      };
+    } catch (err: any) {
+      // Tangani error PocketBase (misal 400, 403, dll)
+      if (err?.status === 400 || err?.status === 403) {
+        throw new BadRequestException(
+          err?.data?.message || 'Gagal upload file ke PocketBase',
+        );
+      }
+      throw err;
+    }
   }
 
-  //upload multiple file
-  async uploadMultiple(files: Express.Multer.File[], token: string) {
-    if (!files?.length) return [];
+  async removeImageFile(
+    recordId: string,
+    token: string,
+  ): Promise<{ success: boolean; message?: string }> {
+    const pb = this.pbService.getAuthenticatedClient(token);
+
+    try {
+      await pb.collection('item_images').delete(recordId);
+      return { success: true };
+    } catch (err: any) {
+      if (err?.status === 404) {
+        return { success: false, message: 'Record tidak ditemukan' };
+      }
+      if (err?.status === 403) {
+        throw new BadRequestException('Tidak berhak menghapus file ini');
+      }
+      throw err;
+    }
+  }
+
+  async uploadMultiple(
+    files: Express.Multer.File[],
+    token: string,
+    baseName?: string,
+  ): Promise<
+    Array<{
+      success: boolean;
+      id?: string;
+      filename?: string;
+      url?: string;
+      thumbUrl?: string;
+      error?: string;
+      originalIndex: number;
+    }>
+  > {
+    if (!files?.length) {
+      return [];
+    }
 
     const uploadPromises = files.map(async (file, index) => {
       try {
-        const result = await this.saveImageFile(file, token);
-        return { ...result, originalIndex: index };
-      } catch (err) {
-        console.error(`Upload gagal untuk file ${index}:`, err);
+        const result = await this.saveImageFile(
+          file,
+          token,
+          baseName ? `${baseName}-${index + 1}` : undefined,
+        );
+
         return {
-          error: true,
-          message: err.message,
+          success: true,
+          ...result,
           originalIndex: index,
-          filename: file.filename,
+        };
+      } catch (err: any) {
+        console.error(
+          `Upload gagal untuk file index ${index}:`,
+          err?.message || err,
+        );
+        return {
+          success: false,
+          error: err?.message || 'Upload gagal',
+          originalIndex: index,
+          filename: file.originalname,
           url: '',
           thumbUrl: '',
         };
@@ -71,8 +130,6 @@ export class UploadService {
 
     results.sort((a, b) => a.originalIndex - b.originalIndex);
 
-    const successful = results.filter((r) => !r.error);
-
-    return successful;
+    return results;
   }
 }

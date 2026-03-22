@@ -116,6 +116,14 @@ export class SockService {
             itemVariants: {
               columns: { color: true, size: true },
             },
+            itemFiles: {
+              columns: {
+                url: true,
+                key: true,
+                thumbnail: true,
+                isPrimary: true,
+              },
+            },
           },
         }),
         await this.db
@@ -144,11 +152,22 @@ export class SockService {
           .orderBy(sc.size.name),
       ]);
 
+    const selectOption = (items: { label: string | null; value: string }[]) => {
+      return items.map((item) => ({
+        label: item.label!,
+        value: item.value!,
+      }));
+    };
+
     const result: DetailSockDto = {
+      //sock detail
       code: Item?.code!,
       description: Item?.description!,
       id: Item?.id,
       machine: Item?.itemMachines.map((item) => item.machine!),
+      imageIds: Item?.itemFiles.map((file) => file.key!),
+      urls: Item?.itemFiles.filter((file) => file.url).map((file) => file.url!),
+      thumbnails: Item?.itemFiles.map((file) => file.thumbnail!),
       material: Item?.material!,
       name: Item?.name!,
       variations: Item?.itemVariants.map((item) => ({
@@ -157,22 +176,11 @@ export class SockService {
       })),
       status: Item?.status!,
 
-      selectMachines: selectMachines.map((item) => ({
-        label: item.label!,
-        value: item.value,
-      })),
-      selectMaterial: selectMaterial.map((item) => ({
-        label: item.label!,
-        value: item.value,
-      })),
-      selectColors: selectColors.map((item) => ({
-        label: item.label!,
-        value: item.value,
-      })),
-      selectSizes: selectSizes.map((item) => ({
-        label: item.label!,
-        value: item.value,
-      })),
+      //selectOptions
+      selectMachines: selectOption(selectMachines),
+      selectMaterial: selectOption(selectMaterial),
+      selectColors: selectOption(selectColors),
+      selectSizes: selectOption(selectSizes),
     };
 
     return result;
@@ -218,6 +226,8 @@ export class SockService {
           .values(
             uploadedFiles.map((item) => ({
               url: item.url,
+              key: item.id,
+              thumbnail: item.thumbUrl,
               item: newKaos.id,
               isPrimary: true, //di pertama saja sisanya false
             })),
@@ -296,6 +306,9 @@ export class SockService {
             },
             itemVariants: {
               columns: { color: true, size: true },
+            },
+            itemFiles: {
+              columns: { key: true, thumbnail: true, url: true },
             },
           },
         });

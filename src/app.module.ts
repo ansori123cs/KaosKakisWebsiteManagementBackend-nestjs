@@ -9,6 +9,7 @@ import { MachineModule } from './modules/master/machine/machine.module';
 import { SockModule } from './modules/transaction/sock/sock.module';
 import { UploadModule } from './shared/upload/uppload.module';
 import { PocketBaseModule } from './shared/pocketbase/pocketbase.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -25,6 +26,11 @@ import { PocketBaseModule } from './shared/pocketbase/pocketbase.module';
     MachineModule,
     //transaction module
     SockModule,
+
+    //config module
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigService available globally
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

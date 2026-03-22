@@ -10,6 +10,8 @@ export const itemFile = pgTable("item-file", {
 	isPrimary: boolean("is_primary").default(false),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	key: text(),
+	thumbnail: text(),
 }, (table) => [
 	foreignKey({
 			columns: [table.item],

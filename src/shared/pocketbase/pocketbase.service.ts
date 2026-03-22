@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import PocketBase from 'pocketbase';
 import { ConfigService } from '@nestjs/config';
+import PocketBase from 'pocketbase';
 
 @Injectable()
 export class PocketBaseService {
   private pb: PocketBase;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     const url =
-      this.configService.get<string>('PB_URL') || 'http://localhost:8090';
+      this.configService.get<string>('BUCKET_URL') || 'http://localhost:8090';
     this.pb = new PocketBase(url);
   }
 
   getAuthenticatedClient(token: string): PocketBase {
-    const client = new PocketBase(this.pb.baseUrl);
+    const client = new PocketBase(this.pb.baseURL);
     client.authStore.save(token, null);
     return client;
   }
