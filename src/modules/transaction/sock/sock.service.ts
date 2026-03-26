@@ -9,7 +9,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from 'src/database/drizzle.service';
 import * as sc from 'src/database/drizzle/index';
 import { SockDto, SockPaginatedDto } from './dto/query-sock.dto';
-import { and, eq, isNull, ne, count } from 'drizzle-orm';
+import { and, eq, isNull, ne, count, inArray } from 'drizzle-orm';
 import { CreateSockDto } from './dto/create-sock.dto';
 import {
   DetailSockDto,
@@ -416,17 +416,24 @@ export class SockService {
         }
 
         if (files) {
-          //delete all variant data and add from payload only
+          //delete all file data and add from payload only
+          const images = await tx
+            .select({ record: sc.itemFile.key })
+            .from(sc.itemFile)
+            .where(eq(sc.itemFile.item, updateKaos.id));
+
+          let deletedImages: string[] = [];
+
+          images.map((image) => {
+            if (image.record) {
+              this.upload.removeImageFile(image.record, token!);
+              deletedImages.push(image.record);
+            }
+          });
+
           await tx
-            .update(sc.itemVariant)
-            .set({
-              status: 0,
-              isDeleted: true,
-              updatedAt: now,
-              deletedAt: now,
-              userDeleted: user,
-            })
-            .where(eq(sc.itemVariant.item, updateKaos.id));
+            .delete(sc.itemFile)
+            .where(inArray(sc.itemFile.key, deletedImages));
         }
 
         return {
@@ -443,12 +450,64 @@ export class SockService {
   }
 
   //remove
-  async remove(id: string): Promise<ResponseSockDto> {
+  async remove(id: string, token: string): Promise<ResponseSockDto> {
     try {
+      const now = new Date().toISOString();
+
+      const user = 'TEST';
+
+      const token = '';
+
+      const deletedParam = {
+        isDeleted: true,
+        deletedAt: now,
+        userDeleted: user,
+        createdAt: now,
+        updatedAt: now,
+      };
+
       const result = await this.db.transaction(async (tx) => {
+        const [deletedKaosKaki] = await tx
+          .update(sc.kaosKaki)
+          .set(deletedParam)
+          .where(eq(sc.kaosKaki.id, id))
+          .returning({
+            id: sc.kaosKaki.id,
+            code: sc.kaosKaki.code,
+            name: sc.kaosKaki.name,
+          });
+
+        await tx
+          .update(sc.itemMachine)
+          .set(deletedParam)
+          .where(eq(sc.itemMachine.item, id));
+
+        await tx
+          .update(sc.itemVariant)
+          .set(deletedParam)
+          .where(eq(sc.itemMachine.item, id));
+
+        const images = await tx
+          .select({ record: sc.itemFile.key })
+          .from(sc.itemFile)
+          .where(eq(sc.itemFile.item, id));
+
+        let deletedImages: string[] = [];
+
+        images.map((image) => {
+          if (image.record) {
+            this.upload.removeImageFile(image.record, token!);
+            deletedImages.push(image.record);
+          }
+        });
+
+        await tx
+          .delete(sc.itemFile)
+          .where(inArray(sc.itemFile.key, deletedImages));
+
         return {
-          code: '',
-          name: '',
+          code: deletedKaosKaki.code ? deletedKaosKaki.code : '',
+          name: deletedKaosKaki.name ? deletedKaosKaki.name : '',
         };
       });
       return result;

@@ -106,6 +106,7 @@ export class SockController {
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.sockService.remove(id);
+    const token = '';
+    return this.sockService.remove(id, token);
   }
 }
