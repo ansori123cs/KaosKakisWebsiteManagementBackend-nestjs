@@ -165,15 +165,20 @@ export class SockService {
       description: Item?.description!,
       id: Item?.id,
       machine: Item?.itemMachines.map((item) => item.machine!),
-      imageIds: Item?.itemFiles.map((file) => file.key!),
-      urls: Item?.itemFiles.filter((file) => file.url).map((file) => file.url!),
-      thumbnails: Item?.itemFiles.map((file) => file.thumbnail!),
+      images:
+        Item?.itemFiles.map((file) => ({
+          imageId: file?.key!,
+          thumbnail: file?.thumbnail!,
+          url: file?.url!,
+          isPrimary: file?.isPrimary ?? false,
+        })) ?? [],
       material: Item?.material!,
       name: Item?.name!,
-      variations: Item?.itemVariants.map((item) => ({
-        color: item?.color!,
-        size: item?.size!,
-      })),
+      variations:
+        Item?.itemVariants.map((item) => ({
+          color: item?.color!,
+          size: item?.size!,
+        })) ?? [],
       status: Item?.status!,
 
       //selectOptions
@@ -284,6 +289,8 @@ export class SockService {
   async update(
     id: string,
     updateSockDto: UpdateSockDto,
+    files?: Express.Multer.File[],
+    token?: string,
   ): Promise<ResponseSockDto> {
     try {
       const result = await this.db.transaction(async (tx) => {
@@ -406,6 +413,20 @@ export class SockService {
               })),
             )
             .returning();
+        }
+
+        if (files) {
+          //delete all variant data and add from payload only
+          await tx
+            .update(sc.itemVariant)
+            .set({
+              status: 0,
+              isDeleted: true,
+              updatedAt: now,
+              deletedAt: now,
+              userDeleted: user,
+            })
+            .where(eq(sc.itemVariant.item, updateKaos.id));
         }
 
         return {

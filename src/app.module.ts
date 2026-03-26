@@ -10,6 +10,8 @@ import { SockModule } from './modules/transaction/sock/sock.module';
 import { UploadModule } from './shared/upload/uppload.module';
 import { PocketBaseModule } from './shared/pocketbase/pocketbase.module';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,10 +31,26 @@ import { ConfigModule } from '@nestjs/config';
 
     //config module
     ConfigModule.forRoot({
-      isGlobal: true, // Makes ConfigService available globally
+      isGlobal: true,
+    }),
+
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+      errorMessage: 'Too many requests, please try again later.',
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

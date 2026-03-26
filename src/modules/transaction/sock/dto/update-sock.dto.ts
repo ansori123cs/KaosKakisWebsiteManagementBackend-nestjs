@@ -1,8 +1,8 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
-  isString,
   IsString,
   IsUUID,
   ValidateNested,
@@ -18,18 +18,24 @@ export class UpdateSockDto extends PartialType(CreateSockDto) {
   @ApiProperty()
   @IsNumber()
   status: number;
+}
 
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  imageIds: string[];
+export class Image {
+  @ApiProperty()
+  @IsBoolean()
+  isPrimary: boolean;
 
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  urls: string[];
+  @ApiProperty()
+  @IsString()
+  imageId: string;
 
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  thumbnails: string[];
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiProperty()
+  @IsString()
+  thumbnail: string;
 }
 
 export class ResponseSockDto {
@@ -53,6 +59,12 @@ class SelectOptionDto {
 }
 
 export class DetailSockDto extends PartialType(UpdateSockDto) {
+  @ApiProperty({ type: [Image] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Image)
+  images: Image[];
+
   @ApiProperty({ type: [SelectOptionDto] })
   @IsArray()
   @ValidateNested({ each: true })

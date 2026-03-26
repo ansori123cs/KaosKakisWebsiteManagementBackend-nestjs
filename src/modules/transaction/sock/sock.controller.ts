@@ -74,7 +74,7 @@ export class SockController {
     )
     files: Express.Multer.File[],
   ) {
-    return this.sockService.create(createSockDto, files, req.pbToken);
+    return this.sockService.create(createSockDto, files);
   }
 
   @Patch(':id')
@@ -86,8 +86,17 @@ export class SockController {
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateSockDto: UpdateSockDto,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({ fileType: /.(jpg|jpeg|png)$/ }),
+        ],
+      }),
+    )
+    files: Express.Multer.File[],
   ) {
-    return this.sockService.update(id, updateSockDto);
+    return this.sockService.update(id, updateSockDto, files);
   }
 
   @Delete(':id')
