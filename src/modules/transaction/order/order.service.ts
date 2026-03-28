@@ -9,6 +9,7 @@ import { DrizzleAsyncProvider } from 'src/database/drizzle.service';
 import * as sc from 'src/database/drizzle/index';
 import { OrderDto, OrderPaginatedDto } from './dto/query-order.dto';
 import { and, count, eq, isNull, ne } from 'drizzle-orm';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -72,6 +73,74 @@ export class OrderService {
         total: total.count,
         result,
       };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
+  async create(createOrderDto: CreateOrderDto) {
+    try {
+      const result = await this.db.transaction(async (tx) => {
+        const now = new Date().toISOString();
+
+        const [newOrder] = await tx
+          .insert(sc.order)
+          .values({
+            note: createOrderDto.note,
+            customer: createOrderDto.customer,
+            status: 1,
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
+            isDeleted: false,
+            userDeleted: null,
+          })
+          .returning({
+            id: sc.order.id,
+            customerId: sc.order.customer,
+          });
+
+        const [newOrderDetails] = await tx
+          .insert(sc.orderDetails)
+          .values(
+            createOrderDto.orderDetails.map((item) => ({
+              order: newOrder.id,
+              amount: item.ammount,
+              price: item.price,
+              status: 1,
+              itemVariant: item.idItemVariant,
+              createdAt: now,
+              updatedAt: now,
+              deletedAt: null,
+              isDeleted: false,
+              userDeleted: null,
+            })),
+          )
+          .returning({ idItemVariant: sc.orderDetails.itemVariant });
+
+        const [customerName, itemName] = await Promise.all([
+          await tx
+            .select({ name: sc.customer.name })
+            .from(sc.customer)
+            .where(eq(sc.customer.id, newOrder.customerId!)),
+          await tx.query.itemVariant.findFirst({
+            where: eq(sc.itemVariant.id, newOrderDetails.idItemVariant!),
+            with: {
+              kaosKaki: {
+                columns: {
+                  name: true,
+                },
+              },
+            },
+          }),
+        ]);
+
+        return {
+          itemName: itemName?.kaosKaki?.name,
+          customerName: customerName[0].name,
+        };
+      });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException('Internal Server Error');
