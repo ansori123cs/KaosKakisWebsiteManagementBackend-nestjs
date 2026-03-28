@@ -12,6 +12,7 @@ import { PocketBaseModule } from './shared/pocketbase/pocketbase.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { OrderModule } from './modules/transaction/order/order.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { APP_GUARD } from '@nestjs/core';
     MachineModule,
     //transaction module
     SockModule,
+    OrderModule,
 
     //config module
     ConfigModule.forRoot({

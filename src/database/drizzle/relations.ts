@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { kaosKaki, itemFile, itemVariant, stock, material, color, size, orderDetails, order, itemMachine, machine } from "./schema";
+import { kaosKaki, itemFile, itemVariant, stock, material, customer, order, color, size, orderDetails, itemMachine, machine } from "./schema";
 
 export const itemFileRelations = relations(itemFile, ({one}) => ({
 	kaosKaki: one(kaosKaki, {
@@ -46,6 +46,18 @@ export const materialRelations = relations(material, ({many}) => ({
 	kaosKakis: many(kaosKaki),
 }));
 
+export const orderRelations = relations(order, ({one, many}) => ({
+	customer: one(customer, {
+		fields: [order.customer],
+		references: [customer.id]
+	}),
+	orderDetails: many(orderDetails),
+}));
+
+export const customerRelations = relations(customer, ({many}) => ({
+	orders: many(order),
+}));
+
 export const colorRelations = relations(color, ({many}) => ({
 	itemVariants: many(itemVariant),
 }));
@@ -63,10 +75,6 @@ export const orderDetailsRelations = relations(orderDetails, ({one}) => ({
 		fields: [orderDetails.order],
 		references: [order.id]
 	}),
-}));
-
-export const orderRelations = relations(order, ({many}) => ({
-	orderDetails: many(orderDetails),
 }));
 
 export const itemMachineRelations = relations(itemMachine, ({one}) => ({

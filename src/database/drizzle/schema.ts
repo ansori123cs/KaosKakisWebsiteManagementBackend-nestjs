@@ -110,18 +110,6 @@ export const customer = pgTable("customer", {
 	status: smallint(),
 });
 
-export const order = pgTable("order", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	note: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-	isDeleted: timestamp("is_deleted", { withTimezone: true, mode: 'string' }),
-	userDeleted: text("user_deleted"),
-	status: smallint(),
-	customer: uuid(),
-});
-
 export const kaosKaki = pgTable("kaos-kaki", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	code: varchar(),
@@ -141,6 +129,24 @@ export const kaosKaki = pgTable("kaos-kaki", {
 			name: "kaos-kaki_material_fkey"
 		}).onUpdate("restrict").onDelete("restrict"),
 	unique("kaos-kaki_code_key").on(table.code),
+]);
+
+export const order = pgTable("order", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	note: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	userDeleted: text("user_deleted"),
+	status: smallint(),
+	customer: uuid(),
+	isDeleted: boolean("is_deleted"),
+}, (table) => [
+	foreignKey({
+			columns: [table.customer],
+			foreignColumns: [customer.id],
+			name: "order_customer_fkey"
+		}),
 ]);
 
 export const itemVariant = pgTable("item-variant", {
