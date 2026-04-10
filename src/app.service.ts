@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DrizzleAsyncProvider } from './database/drizzle.service';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as sc from './database/drizzle/schema';
+import * as sc from 'src/database/drizzle/index';
 import { sql } from 'drizzle-orm';
-
+import { seed } from 'drizzle-seed';
 @Injectable()
 export class AppService {
   constructor(
@@ -21,6 +21,33 @@ export class AppService {
       return {
         status: 'failed',
         message: 'conection failed',
+      };
+    }
+  }
+  async seeder() {
+    try {
+      await seed(this.db, {
+        material: sc.material,
+        size: sc.size,
+        machine: sc.machine,
+        color: sc.color,
+        customer: sc.customer,
+      }).refine((f) => ({
+        material: { count: 10 },
+        size: { count: 10 },
+        machine: { count: 10 },
+        color: { count: 10 },
+        customer: { count: 10 },
+      }));
+      return {
+        status: 'success',
+        message: 'seeder success',
+      };
+    } catch (error) {
+      console.error('Seeder error:', error);
+      return {
+        status: 'failed',
+        message: 'seeder failed',
       };
     }
   }

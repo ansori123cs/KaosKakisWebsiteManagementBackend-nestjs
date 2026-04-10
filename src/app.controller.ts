@@ -12,4 +12,11 @@ export class AppController {
   getHello() {
     return this.appService.getHello();
   }
+
+  @Get('/seeder')
+  @ApiOkResponse()
+  @ApiInternalServerErrorResponse()
+  seeder() {
+    return this.appService.seeder();
+  }
 }

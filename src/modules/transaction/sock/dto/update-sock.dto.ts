@@ -13,49 +13,49 @@ import { Type } from 'class-transformer';
 export class UpdateSockDto extends PartialType(CreateSockDto) {
   @ApiProperty()
   @IsUUID()
-  id: string;
+  id?: string;
 
   @ApiProperty()
   @IsNumber()
-  status: number;
+  status?: number;
 }
 
 export class Image {
   @ApiProperty()
   @IsBoolean()
-  isPrimary: boolean;
+  isPrimary?: boolean;
 
   @ApiProperty()
   @IsString()
-  imageId: string;
+  imageId?: string;
 
   @ApiProperty()
   @IsString()
-  url: string;
+  url?: string;
 
   @ApiProperty()
   @IsString()
-  thumbnail: string;
+  thumbnail?: string;
 }
 
 export class ResponseSockDto {
   @ApiProperty()
   @IsString()
-  code: string;
+  code?: string;
 
   @ApiProperty()
   @IsString()
-  name: string;
+  name?: string;
 }
 
 class SelectOptionDto {
   @ApiProperty()
   @IsString()
-  label: string;
+  label?: string;
 
   @ApiProperty()
   @IsUUID()
-  value: string;
+  value?: string;
 }
 
 export class DetailSockDto extends PartialType(UpdateSockDto) {
@@ -63,29 +63,29 @@ export class DetailSockDto extends PartialType(UpdateSockDto) {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Image)
-  images: Image[];
+  images?: Image[];
 
   @ApiProperty({ type: [SelectOptionDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SelectOptionDto)
-  selectMaterial: SelectOptionDto[];
+  selectMaterial?: SelectOptionDto[];
 
   @ApiProperty({ type: [SelectOptionDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SelectOptionDto)
-  selectMachines: SelectOptionDto[];
+  selectMachines?: SelectOptionDto[];
 
   @ApiProperty({ type: [SelectOptionDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SelectOptionDto)
-  selectSizes: SelectOptionDto[];
+  selectSizes?: SelectOptionDto[];
 
   @ApiProperty({ type: [SelectOptionDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SelectOptionDto)
-  selectColors: SelectOptionDto[];
+  selectColors?: SelectOptionDto[];
 }

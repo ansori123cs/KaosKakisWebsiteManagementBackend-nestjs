@@ -4,41 +4,41 @@ import { IsNumber, IsString, IsUUID } from 'class-validator';
 export class OrderDto {
   @ApiProperty()
   @IsUUID()
-  id: string;
+  id?: string;
 
   @ApiProperty()
   @IsString()
-  customerName: string;
+  customerName?: string;
 
   @ApiProperty()
   @IsString()
-  itemName: string;
+  itemName?: string;
 
   @ApiProperty()
   @IsNumber()
-  status: number;
+  status?: number;
 
   @ApiProperty()
   @IsString()
-  startOrderDate: string;
+  startOrderDate?: string;
 
   @ApiProperty()
   @IsString()
-  finishOrderDate: string;
+  finishOrderDate?: string;
 }
 
 export class PaginatedDto<TData> {
   @ApiProperty()
-  total: number;
+  total?: number;
 
   @ApiProperty()
-  limit: number;
+  limit?: number;
 
   @ApiProperty()
-  offset: number;
+  offset?: number;
 }
 
 export class OrderPaginatedDto extends PaginatedDto<OrderDto> {
   @ApiProperty({ type: OrderDto, isArray: true })
-  result: OrderDto[];
+  result?: OrderDto[];
 }
